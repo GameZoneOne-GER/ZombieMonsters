@@ -7,8 +7,8 @@ using Newtonsoft.Json;
 
 namespace Oxide.Plugins
 {
-    [Info("ZombieMonsters", "GameZoneOne", "2.3.8")]
-    [Description("Spawns Scarecrow-NPCs in PvP-Zonen (Murderer vorerst deaktiviert) mit Despawn und Purge-Buffs.")]
+    [Info("Zombie Monsters", "gamezoneone", "2.3.8")]
+    [Description("Spawns Scarecrow NPCs in PvP zones with configurable despawn, lifetime and optional Purge event buffs.")]
     public class ZombieMonsters : RustPlugin
     {
         [PluginReference] Plugin Purge;
@@ -67,6 +67,20 @@ namespace Oxide.Plugins
         private const float MinSpawnDistanceFromPlayer = 22f;
 
         private Timer spawnTimer;
+
+        private string T(string key, string userId = null) => lang.GetMessage(key, this, userId);
+
+        protected override void LoadDefaultMessages()
+        {
+            lang.RegisterMessages(new Dictionary<string, string>
+            {
+                ["NoPermission"] = "You don't have permission to use this command.",
+                ["ZombiesKilled"] = "All zombies have been removed.",
+                ["WaveTriggered"] = "Zombie wave triggered manually.",
+                ["SpawnSuccess"] = "Spawned {0} Scarecrow(s) near you.",
+                ["SpawnFailed"] = "Spawn failed — check server log (prefab).",
+            }, this);
+        }
 
         void Init()
         {
@@ -666,12 +680,12 @@ namespace Oxide.Plugins
         {
             if (!HasAdminAccess(player))
             {
-                player.ChatMessage("Keine Berechtigung.");
+                player.ChatMessage(T("NoPermission", player.UserIDString));
                 return;
             }
 
             KillAllZombies();
-            player.ChatMessage("Alle Zombies wurden entfernt.");
+            player.ChatMessage(T("ZombiesKilled", player.UserIDString));
         }
 
         [ChatCommand("zspawnhere")]
@@ -679,7 +693,7 @@ namespace Oxide.Plugins
         {
             if (!HasAdminAccess(player))
             {
-                player.ChatMessage("Keine Berechtigung.");
+                player.ChatMessage(T("NoPermission", player.UserIDString));
                 return;
             }
 
@@ -689,17 +703,16 @@ namespace Oxide.Plugins
             if (TrySpawnOneScarecrow(front, false, out _, out Vector3 spawnedPos))
             {
                 n = 1;
-                Puts($"[ZombieMonsters] /zspawnhere von {player.displayName}: Spawn @ {spawnedPos}");
+                Puts($"[ZombieMonsters] /zspawnhere by {player.displayName}: spawn @ {spawnedPos}");
             }
             else
             {
-                // Fallback falls der direkte Spawnpunkt ungeeignet ist.
                 n = SpawnZombiesAt(player.transform.position, true, 22f);
             }
 
             player.ChatMessage(n > 0
-                ? $"[ZombieMonsters] Spawn: {n} Scarecrow(s) bei dir."
-                : "[ZombieMonsters] Spawn fehlgeschlagen — siehe Serverlog (Prefab).");
+                ? string.Format(T("SpawnSuccess", player.UserIDString), n)
+                : T("SpawnFailed", player.UserIDString));
         }
 
         [ChatCommand("zwave")]
@@ -707,13 +720,13 @@ namespace Oxide.Plugins
         {
             if (!HasAdminAccess(player))
             {
-                player.ChatMessage("Keine Berechtigung.");
+                player.ChatMessage(T("NoPermission", player.UserIDString));
                 return;
             }
 
             SpawnWaveNearPlayers();
             CleanupZombies();
-            player.ChatMessage("Zombie-Wave wurde manuell ausgelöst.");
+            player.ChatMessage(T("WaveTriggered", player.UserIDString));
         }
 
         [ConsoleCommand("zombies.killall")]
