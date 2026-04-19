@@ -9,6 +9,16 @@
 
 ---
 
+## Screenshots
+
+> Replace with actual screenshots — upload to `screenshots/` in the repo and update the paths below.
+
+| NPCs at monument | Purge event |
+|---|---|
+| ![NPCs at monument](https://placehold.co/480x270/0d1117/4d9375?text=NPCs+at+Monument) | ![Purge event](https://placehold.co/480x270/0d1117/4d9375?text=Purge+Event) |
+
+---
+
 ## Features
 
 - Spawns **Scarecrow NPCs** at defined spawn zones on a configurable interval
